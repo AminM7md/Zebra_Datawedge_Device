@@ -1,4 +1,4 @@
-# zebra_datawedge
+# Zebra_Datawedge_With_Flutter
 
 Flutter plugin that works with Zebra DataWedge on compatible Zebra Android devices.
 
