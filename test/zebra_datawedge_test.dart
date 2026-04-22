@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zebra_scan_datawedge/zebra_datawedge.dart';
-import 'package:zebra_scan_datawedge/zebra_datawedge_platform_interface.dart';
+import 'package:zebra_wedge_scanner/zebra_datawedge.dart';
+import 'package:zebra_wedge_scanner/zebra_datawedge_platform_interface.dart';
 
 class _RecordedCall {
   _RecordedCall(this.name, this.arguments);
