@@ -551,16 +551,9 @@ Use this before running publish.
 ```bash
 flutter analyze
 flutter test
-flutter pub publish --dry-run
 ```
 
-4. Fix all warnings from dry run
 
-5. Publish
-
-```bash
-flutter pub publish
-```
 
 ## References
 
