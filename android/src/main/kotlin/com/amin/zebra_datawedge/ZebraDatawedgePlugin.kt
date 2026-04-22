@@ -1,4 +1,4 @@
-package com.example.zebra_datawedge
+package com.amin.zebra_datawedge
 
 import android.content.BroadcastReceiver
 import android.content.Context

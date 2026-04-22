@@ -1,4 +1,4 @@
-package com.example.zebra_datawedge
+package com.amin.zebra_datawedge
 
 import android.content.Intent
 import android.os.Bundle
