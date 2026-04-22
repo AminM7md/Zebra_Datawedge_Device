@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zebra_datawedge/zebra_datawedge.dart';
+import 'package:zebra_scan_datawedge/zebra_datawedge.dart';
 
 void main() {
   group('dataWedgeBool', () {

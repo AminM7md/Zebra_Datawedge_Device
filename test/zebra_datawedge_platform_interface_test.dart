@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zebra_datawedge/zebra_datawedge_method_channel.dart';
-import 'package:zebra_datawedge/zebra_datawedge_platform_interface.dart';
+import 'package:zebra_scan_datawedge/zebra_datawedge_method_channel.dart';
+import 'package:zebra_scan_datawedge/zebra_datawedge_platform_interface.dart';
 
 class _BasePlatform extends ZebraDataWedgePlatform {}
 
