@@ -530,31 +530,6 @@ Checklist:
 2. Compare available scanners with `enumerateScanners`.
 3. Compare supported workflows using `enumerateWorkflows`.
 
-## Pub.dev Publishing Checklist
-
-Use this before running publish.
-
-1. Update package metadata in `pubspec.yaml`
-   - `description`
-   - `version`
-   - `homepage`
-   - `repository` (recommended)
-   - `issue_tracker` (recommended)
-
-2. Ensure docs are complete
-   - This README explains setup and usage
-   - Keep `CHANGELOG.md` updated for every release
-   - Keep `LICENSE` present
-
-3. Validate quality locally
-
-```bash
-flutter analyze
-flutter test
-```
-
-
-
 ## References
 
 - DataWedge Overview: https://techdocs.zebra.com/datawedge/latest/guide/about/
