@@ -3,6 +3,7 @@
 * Rewrote README with beginner-friendly, step-by-step integration guidance.
 * Added deep explanations for core concepts, events, profile setup, and API usage.
 * Added Pub.dev publishing checklist and practical troubleshooting flow.
+* Added license and legal transparency notes (MIT license, independent project disclaimer, and trademark usage guidance).
 
 ## 0.1.0
 

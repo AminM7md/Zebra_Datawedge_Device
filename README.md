@@ -1,6 +1,6 @@
 # zebra_datawedge
 
-Flutter plugin for Zebra DataWedge on Zebra Android devices.
+Flutter plugin that works with Zebra DataWedge on compatible Zebra Android devices.
 
 This README is written for beginners and junior Flutter developers.
 It explains what each major part of the package does and how to use it in a real app.
@@ -18,6 +18,8 @@ It explains what each major part of the package does and how to use it in a real
 - Reliable Command Handling Pattern
 - Advanced Examples
 - Troubleshooting Guide
+- License
+- Legal and Trademark Notice
 - Pub.dev Publishing Checklist
 - References
 
@@ -529,6 +531,19 @@ Checklist:
 1. Compare DataWedge versions using `getVersionInfo`.
 2. Compare available scanners with `enumerateScanners`.
 3. Compare supported workflows using `enumerateWorkflows`.
+
+## License
+
+This package is distributed under the MIT License.
+See [LICENSE](LICENSE) for full terms.
+
+## Legal and Trademark Notice
+
+- This is an independent open-source project and is not affiliated with or endorsed by Zebra Technologies.
+- This package works with Zebra devices and DataWedge APIs; it is not an official Zebra plugin.
+- Zebra, DataWedge, and related marks are trademarks of Zebra Technologies Corporation and/or its affiliates.
+- This plugin is designed to use public DataWedge APIs exposed on compatible Zebra Android devices.
+- You are responsible for following Zebra device software terms, API documentation terms, and any trademark usage rules in your product, docs, or store listing.
 
 ## References
 
