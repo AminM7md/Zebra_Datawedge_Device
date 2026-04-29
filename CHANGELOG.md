@@ -1,3 +1,12 @@
+## 1.0.0
+
+* Initial stable release with full Zebra DataWedge Android plugin support.
+* Added typed and generic command APIs for comprehensive DataWedge control.
+* Added event streams for scan data, command results, notifications, and debug messages.
+* Added profile management, scanner control, notifications, and diagnostics APIs.
+* Added clean architecture with public API facade, platform interface, and method-channel adapter.
+* Updated example app and comprehensive test coverage.
+
 ## 0.1.4
 
 * Rewrote README with beginner-friendly, step-by-step integration guidance.
