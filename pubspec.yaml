@@ -1,6 +1,6 @@
 name: zebra_wedge_scanner
 description: "Flutter plugin for Zebra DataWedge (Android) with typed and generic command APIs."
-version: 0.1.4
+version: 0.1.5
 homepage: https://github.com/AminM7md/Zebra_Datawedge_Device
 
 environment:

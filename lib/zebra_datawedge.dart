@@ -3,34 +3,91 @@ import 'zebra_datawedge_platform_interface.dart';
 
 export 'src/models/datawedge_models.dart';
 
+/// A Flutter plugin for interacting with Zebra DataWedge on Android devices.
+///
+/// This class provides a high-level API to configure and control Zebra's
+/// DataWedge service, which provides barcode scanning and data capture
+/// capabilities for Zebra mobile computers.
+///
+/// Example usage:
+/// ```dart
+/// final zebra = ZebraDataWedge();
+///
+/// // Check if DataWedge is available
+/// final available = await zebra.isAvailable();
+///
+/// // Listen to scan events
+/// zebra.events.listen((event) {
+///   if (event.isScan) {
+///     print('Scanned: ${event.scanData}');
+///   }
+/// });
+///
+/// // Create and configure a profile
+/// await zebra.configureClassicBarcodeProfile(
+///   profileName: 'MyProfile',
+///   packageName: 'com.example.myapp',
+/// );
+/// ```
 class ZebraDataWedge {
+  /// Creates a new [ZebraDataWedge] instance.
+  ///
+  /// An optional [platform] can be provided for testing or custom implementations.
   ZebraDataWedge({ZebraDataWedgePlatform? platform})
       : _platform = platform ?? ZebraDataWedgePlatform.instance;
 
   final ZebraDataWedgePlatform _platform;
 
+  /// A stream of raw scan data as [Map<String, dynamic>].
+  ///
+  /// Each event contains the scanned data with keys like 'data', 'labelType', etc.
+  /// Prefer using [events] for typed events instead.
   Stream<Map<String, dynamic>> get scanStream => _platform.events;
 
+  /// A stream of typed [DataWedgeEvent] objects.
+  ///
+  /// This stream emits events for scans, command results, and notifications
+  /// from the DataWedge service. Use the [DataWedgeEvent.isScan],
+  /// [DataWedgeEvent.isCommandResult], and [DataWedgeEvent.isNotification]
+  /// getters to filter event types.
   Stream<DataWedgeEvent> get events {
     return _platform.events.map<DataWedgeEvent>(DataWedgeEvent.fromMap);
   }
 
+  /// Checks if the Zebra DataWedge service is available on the device.
+  ///
+  /// Returns `true` if DataWedge is installed and available, `false` otherwise.
   Future<bool> isAvailable() {
     return _platform.isDataWedgeAvailable();
   }
 
+  /// Creates or updates a DataWedge profile with the given [profileName].
+  ///
+  /// This method will create the profile if it doesn't exist, or update
+  /// the existing profile configuration.
   Future<void> configureProfile(String profileName) {
     return _platform.configureProfile(profileName);
   }
 
+  /// Switches DataWedge to use the specified [profileName].
+  ///
+  /// The profile must already exist. Use [configureProfile] or
+  /// [configureClassicBarcodeProfile] to create one first.
   Future<void> switchToProfile(String profileName) {
     return _platform.switchToProfile(profileName);
   }
 
+  /// Starts a software scan trigger (initiates barcode scanning).
+  ///
+  /// This is equivalent to pressing the hardware scan button.
+  /// Use [stopSoftScan] or [toggleSoftScan] to control the scan session.
   Future<void> startSoftScan() {
     return _platform.startSoftScan();
   }
 
+  /// Stops an ongoing software scan session.
+  ///
+  /// Call this after [startSoftScan] when you want to stop scanning.
   Future<void> stopSoftScan() {
     return sendCommand(
       command: DataWedgeApi.softScanTrigger,
@@ -39,6 +96,9 @@ class ZebraDataWedge {
     );
   }
 
+  /// Toggles the software scan trigger state.
+  ///
+  /// If scanning is active, it will stop. If inactive, it will start.
   Future<void> toggleSoftScan() {
     return sendCommand(
       command: DataWedgeApi.softScanTrigger,
@@ -47,38 +107,71 @@ class ZebraDataWedge {
     );
   }
 
+  /// Enables the barcode scanner.
+  ///
+  /// The scanner must be enabled before it can receive scan triggers.
   Future<void> enableScanner() {
     return _platform.enableScanner();
   }
 
+  /// Disables the barcode scanner.
+  ///
+  /// After calling this, the scanner will not respond to scan triggers
+  /// until [enableScanner] is called.
   Future<void> disableScanner() {
     return _platform.disableScanner();
   }
 
+  /// Registers for notifications of the specified [notificationType].
+  ///
+  /// Available notification types are defined in [DataWedgeNotificationType]:
+  /// - [DataWedgeNotificationType.scannerStatus]: Scanner state changes
+  /// - [DataWedgeNotificationType.profileSwitch]: Profile change events
+  /// - [DataWedgeNotificationType.configurationUpdate]: Config changes
+  /// - [DataWedgeNotificationType.workflowStatus]: Workflow state changes
   Future<void> registerForNotification(String notificationType) {
     return _platform.registerForNotification(notificationType);
   }
 
+  /// Unregisters from notifications of the specified [notificationType].
   Future<void> unregisterForNotification(String notificationType) {
     return _platform.unregisterForNotification(notificationType);
   }
 
+  /// Retrieves the currently active DataWedge profile name.
+  ///
+  /// The result will be delivered as a command result event on the [events] stream.
   Future<void> getActiveProfile() {
     return _platform.getActiveProfile();
   }
 
+  /// Retrieves the list of all DataWedge profiles.
+  ///
+  /// The result will be delivered as a command result event on the [events] stream.
   Future<void> getProfilesList() {
     return _platform.getProfilesList();
   }
 
+  /// Retrieves the DataWedge version information.
+  ///
+  /// The result will be delivered as a command result event on the [events] stream.
   Future<void> getVersionInfo() {
     return _platform.getVersionInfo();
   }
 
+  /// Enumerates all available scanners on the device.
+  ///
+  /// The result will be delivered as a command result event on the [events] stream,
+  /// containing a list of available scanners with their identifiers and types.
   Future<void> enumerateScanners() {
     return _platform.enumerateScanners();
   }
 
+  /// Creates a new DataWedge profile with the given [profileName].
+  ///
+  /// Optionally, a [commandTag] can be provided to identify the result
+  /// in the command result event. Set [requestResult] to `false` to
+  /// avoid receiving a result event.
   Future<void> createProfile(
     String profileName, {
     String? commandTag,
@@ -92,6 +185,11 @@ class ZebraDataWedge {
     );
   }
 
+  /// Clones an existing profile to a new profile.
+  ///
+  /// [sourceProfileName] is the name of the existing profile to clone.
+  /// [destinationProfileName] is the name for the new cloned profile.
+  /// Optionally, a [commandTag] can be provided to identify the result.
   Future<void> cloneProfile({
     required String sourceProfileName,
     required String destinationProfileName,
@@ -106,6 +204,11 @@ class ZebraDataWedge {
     );
   }
 
+  /// Renames an existing profile.
+  ///
+  /// [profileName] is the current name of the profile.
+  /// [newProfileName] is the new name to assign.
+  /// Optionally, a [commandTag] can be provided to identify the result.
   Future<void> renameProfile({
     required String profileName,
     required String newProfileName,
@@ -120,6 +223,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Deletes one or more DataWedge profiles.
+  ///
+  /// [profileNames] is a list of profile names to delete.
+  /// Use [deleteAllDeletableProfiles] to delete all deletable profiles at once.
   Future<void> deleteProfiles(
     List<String> profileNames, {
     String? commandTag,
@@ -133,6 +240,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Deletes all deletable DataWedge profiles.
+  ///
+  /// This uses the wildcard '*' to match all profiles that can be deleted.
+  /// Use [deleteProfiles] to delete specific profiles.
   Future<void> deleteAllDeletableProfiles({
     String? commandTag,
     bool requestResult = true,
@@ -144,6 +255,11 @@ class ZebraDataWedge {
     );
   }
 
+  /// Applies a full profile configuration to DataWedge.
+  ///
+  /// [configuration] is a [DataWedgeProfileConfiguration] object that defines
+  /// the complete profile settings including plugins, app associations, etc.
+  /// Use [DataWedgeProfileBuilder] to construct the configuration.
   Future<void> setConfig(
     DataWedgeProfileConfiguration configuration, {
     String? commandTag,
@@ -157,6 +273,9 @@ class ZebraDataWedge {
     );
   }
 
+  /// Applies a profile configuration (alias for [setConfig]).
+  ///
+  /// This method is equivalent to [setConfig] and provided for semantic clarity.
   Future<void> applyProfileConfiguration(
     DataWedgeProfileConfiguration configuration, {
     String? commandTag,
@@ -169,6 +288,22 @@ class ZebraDataWedge {
     );
   }
 
+  /// Configures a classic barcode scanning profile with sensible defaults.
+  ///
+  /// This is a convenience method that sets up a profile with:
+  /// - Barcode plugin enabled with auto scanner selection
+  /// - Intent output configured for the specified [packageName]
+  /// - Keystroke output disabled (to avoid duplicate data)
+  /// - App association for the specified [packageName] and [activityList]
+  ///
+  /// [profileName] is the name for the new profile.
+  /// [packageName] is your app's package name (e.g., 'com.example.myapp').
+  /// [activityList] specifies which activities the profile applies to.
+  /// [intentAction] custom intent action (defaults to '$packageName.SCAN').
+  /// [intentCategory] the intent category (defaults to 'android.intent.category.DEFAULT').
+  /// [intentDelivery] the intent delivery method (defaults to broadcast).
+  /// [registerDefaultNotifications] automatically registers for scanner status,
+  /// profile switch, configuration update, and workflow status notifications.
   Future<void> configureClassicBarcodeProfile({
     required String profileName,
     required String packageName,
@@ -238,6 +373,17 @@ class ZebraDataWedge {
     }
   }
 
+  /// Retrieves the configuration of an existing DataWedge profile.
+  ///
+  /// [profileName] is the name of the profile to retrieve.
+  /// [pluginNames] optionally specifies which plugins to retrieve config for.
+  /// [processPlugins] optionally specifies process plugins to include.
+  /// [includeAppList] when true, includes the app association list.
+  /// [includeDataCapturePlus] when true, includes DataCapture Plus config.
+  /// [includeEnterpriseKeyboard] when true, includes Enterprise Keyboard config.
+  /// [scannerSelectionByIdentifier] optionally filter by scanner identifier.
+  ///
+  /// The result is delivered as a command result event on the [events] stream.
   Future<void> getConfig({
     required String profileName,
     List<String>? pluginNames,
@@ -297,6 +443,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sets the specified profile as the default DataWedge profile.
+  ///
+  /// [profileName] is the name of the profile to set as default.
+  /// The default profile is used when no other profile matches the current app.
   Future<void> setDefaultProfile(
     String profileName, {
     String? commandTag,
@@ -310,6 +460,7 @@ class ZebraDataWedge {
     );
   }
 
+  /// Resets the default profile to the DataWedge system default.
   Future<void> resetDefaultProfile({
     String? commandTag,
     bool requestResult = true,
@@ -322,6 +473,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Imports DataWedge configuration from files.
+  ///
+  /// [request] specifies the folder path and optional file list to import.
+  /// Use [DataWedgeImportConfigRequest] to configure the import.
   Future<void> importConfig(
     DataWedgeImportConfigRequest request, {
     String? commandTag,
@@ -335,6 +490,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Exports DataWedge configuration to files.
+  ///
+  /// [request] specifies the folder path, export type, and optional profile name.
+  /// Use [DataWedgeExportConfigRequest] to configure the export.
   Future<void> exportConfig(
     DataWedgeExportConfigRequest request, {
     String? commandTag,
@@ -348,6 +507,11 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sets the list of apps where DataWedge should be disabled.
+  ///
+  /// [request] specifies the configuration mode and list of apps.
+  /// Use [DataWedgeDisabledAppListRequest] to configure which apps
+  /// should have DataWedge disabled.
   Future<void> setDisabledAppList(
     DataWedgeDisabledAppListRequest request, {
     String? commandTag,
@@ -361,6 +525,9 @@ class ZebraDataWedge {
     );
   }
 
+  /// Retrieves the list of apps where DataWedge is disabled.
+  ///
+  /// The result is delivered as a command result event on the [events] stream.
   Future<void> getDisabledAppList({
     String? commandTag,
     bool requestResult = true,
@@ -372,6 +539,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sets whether DataWedge should ignore disabled profiles.
+  ///
+  /// When [ignoreDisabledProfiles] is true, disabled profiles are skipped
+  /// during profile selection.
   Future<void> setIgnoreDisabledProfiles(
     bool ignoreDisabledProfiles, {
     String? commandTag,
@@ -385,6 +556,9 @@ class ZebraDataWedge {
     );
   }
 
+  /// Retrieves whether DataWedge ignores disabled profiles.
+  ///
+  /// The result is delivered as a command result event on the [events] stream.
   Future<void> getIgnoreDisabledProfiles({
     String? commandTag,
     bool requestResult = true,
@@ -396,6 +570,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Enables or disables the DataWedge service.
+  ///
+  /// When [enabled] is true, DataWedge is enabled and can process scans.
+  /// When false, DataWedge is completely disabled.
   Future<void> setDataWedgeEnabled(
     bool enabled, {
     String? commandTag,
@@ -409,6 +587,9 @@ class ZebraDataWedge {
     );
   }
 
+  /// Retrieves the current DataWedge service status.
+  ///
+  /// The result is delivered as a command result event on the [events] stream.
   Future<void> getDataWedgeStatus({
     String? commandTag,
     bool requestResult = true,
@@ -420,6 +601,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Retrieves the current scanner status.
+  ///
+  /// The result is delivered as a command result event on the [events] stream,
+  /// indicating whether the scanner is idle, scanning, waiting, etc.
   Future<void> getScannerStatus({
     String? commandTag,
     bool requestResult = true,
@@ -431,6 +616,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Enumerates all available trigger sources on the device.
+  ///
+  /// The result is delivered as a command result event on the [events] stream,
+  /// listing all hardware and software triggers.
   Future<void> enumerateTriggers({
     String? commandTag,
     bool requestResult = true,
@@ -442,6 +631,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Enumerates all available workflows on the device.
+  ///
+  /// The result is delivered as a command result event on the [events] stream,
+  /// listing all configured workflow profiles.
   Future<void> enumerateWorkflows({
     String? commandTag,
     bool requestResult = true,
@@ -453,6 +646,11 @@ class ZebraDataWedge {
     );
   }
 
+  /// Controls the software scan trigger with optional scanner selection.
+  ///
+  /// [action] specifies the trigger action. Use values from
+  /// [DataWedgeSoftTriggerAction] (start, stop, toggle).
+  /// [scannerSelectionByIdentifier] optionally specifies which scanner to control.
   Future<void> softScanTrigger({
     required String action,
     String? scannerSelectionByIdentifier,
@@ -480,6 +678,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Controls the software RFID trigger.
+  ///
+  /// [action] specifies the trigger action. Use values from
+  /// [DataWedgeSoftTriggerAction] (start, stop, toggle).
   Future<void> softRfidTrigger({
     required String action,
     String? commandTag,
@@ -493,6 +695,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Controls the software voice trigger for voice input workflows.
+  ///
+  /// [action] specifies the trigger action (start, stop, toggle).
+  /// [pluginName] is the voice plugin name (defaults to [DataWedgePluginName.voice]).
   Future<void> softVoiceTrigger({
     required String action,
     String pluginName = DataWedgePluginName.voice,
@@ -510,6 +716,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sends a generic scanner input plugin command.
+  ///
+  /// [action] specifies the plugin action. Use values from
+  /// [DataWedgeScannerInputAction] for enable, disable, suspend, or resume.
   Future<void> scannerInputPlugin(
     String action, {
     String? commandTag,
@@ -523,6 +733,9 @@ class ZebraDataWedge {
     );
   }
 
+  /// Suspends the scanner plugin (temporarily disables scanning).
+  ///
+  /// Call [resumeScanner] to re-enable scanning.
   Future<void> suspendScanner({
     String? commandTag,
     bool requestResult = true,
@@ -534,6 +747,9 @@ class ZebraDataWedge {
     );
   }
 
+  /// Resumes a suspended scanner plugin.
+  ///
+  /// Call this after [suspendScanner] to re-enable scanning.
   Future<void> resumeScanner({
     String? commandTag,
     bool requestResult = true,
@@ -545,6 +761,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Switches to a scanner by its numeric index.
+  ///
+  /// [scannerIndex] is the index of the scanner as reported by
+  /// [enumerateScanners].
   Future<void> switchScannerByIndex(
     int scannerIndex, {
     String? commandTag,
@@ -558,6 +778,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Switches to a scanner by its identifier string.
+  ///
+  /// [scannerIdentifier] is the scanner identifier (e.g.,
+  /// [DataWedgeScannerIdentifier.internalImager], [DataWedgeScannerIdentifier.bluetoothRs6000]).
   Future<void> switchScannerByIdentifier(
     String scannerIdentifier, {
     String? commandTag,
@@ -571,6 +795,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Updates scanner parameters for the currently active scanner.
+  ///
+  /// [parameters] is a map of parameter names to values.
+  /// [scannerSelectionByIdentifier] optionally specifies which scanner to configure.
   Future<void> switchScannerParams({
     required Map<String, dynamic> parameters,
     String? scannerSelectionByIdentifier,
@@ -590,6 +818,11 @@ class ZebraDataWedge {
     );
   }
 
+  /// Switches the active data capture plugin.
+  ///
+  /// [targetPlugin] is the plugin to switch to (e.g., [DataWedgePluginName.barcode]).
+  /// [paramList] optionally provides parameters for the target plugin.
+  /// [includeApplicationPackage] when true, includes the app package in the intent.
   Future<void> switchDataCapture({
     required String targetPlugin,
     Map<String, dynamic>? paramList,
@@ -610,6 +843,15 @@ class ZebraDataWedge {
     );
   }
 
+  /// Registers for all default notification types.
+  ///
+  /// This registers for:
+  /// - Scanner status changes
+  /// - Profile switch events
+  /// - Configuration update events
+  /// - Workflow status changes
+  ///
+  /// This is typically called after configuring a profile.
   Future<void> registerForDefaultNotifications() async {
     const List<String> notificationTypes = <String>[
       DataWedgeNotificationType.scannerStatus,
@@ -623,6 +865,11 @@ class ZebraDataWedge {
     }
   }
 
+  /// Retrieves the weight from a connected scale device.
+  ///
+  /// [deviceIdentifier] specifies the scale device (defaults to
+  /// [DataWedgeScannerIdentifier.usbTgcsMp7000]).
+  /// The result is delivered as a command result event on the [events] stream.
   Future<void> getWeight({
     String deviceIdentifier = DataWedgeScannerIdentifier.usbTgcsMp7000,
     String? commandTag,
@@ -639,6 +886,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sets the connected scale device to zero (tare).
+  ///
+  /// [deviceIdentifier] specifies the scale device (defaults to
+  /// [DataWedgeScannerIdentifier.usbTgcsMp7000]).
   Future<void> setScaleToZero({
     String deviceIdentifier = DataWedgeScannerIdentifier.usbTgcsMp7000,
     String? commandTag,
@@ -655,6 +906,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sends a notification request to a Bluetooth scanner.
+  ///
+  /// [request] specifies the device identifier and notification settings.
+  /// Use [DataWedgeNotificationRequest] to configure LED, beep, or vibration notifications.
   Future<void> notifyBluetoothScanner(
     DataWedgeNotificationRequest request, {
     String? commandTag,
@@ -668,6 +923,10 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sends a custom notification request to a Bluetooth scanner.
+  ///
+  /// [request] specifies custom LED, beep, and vibration settings.
+  /// Use [DataWedgeCustomNotificationRequest] for full control over notification behavior.
   Future<void> customNotifyBluetoothScanner(
     DataWedgeCustomNotificationRequest request, {
     String? commandTag,
@@ -681,6 +940,12 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sends a generic command to DataWedge.
+  ///
+  /// [command] is the DataWedge API command string.
+  /// [value] is the command parameter (can be String, List, or Map).
+  /// [commandTag] optionally identifies this command in result events.
+  /// [requestResult] when true, a result event will be emitted on the [events] stream.
   Future<void> sendCommand({
     required String command,
     dynamic value,
@@ -695,6 +960,15 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sends a command with a Map value to DataWedge.
+  ///
+  /// Use this for commands that require complex configuration objects
+  /// (e.g., [DataWedgeApi.setConfig], [DataWedgeApi.getConfig]).
+  ///
+  /// [command] is the DataWedge API command string.
+  /// [value] is the configuration Map to send.
+  /// [commandTag] optionally identifies this command in result events.
+  /// [requestResult] when true, a result event will be emitted on the [events] stream.
   Future<void> sendCommandBundle({
     required String command,
     required Map<String, dynamic> value,
@@ -709,6 +983,14 @@ class ZebraDataWedge {
     );
   }
 
+  /// Sends a custom intent to DataWedge or another package.
+  ///
+  /// [extras] contains the intent extras (key-value pairs).
+  /// [action] optionally specifies the intent action.
+  /// [targetPackage] optionally specifies the target package (defaults to DataWedge).
+  /// [commandTag] optionally identifies this command in result events.
+  /// [orderedBroadcast] when true, uses ordered broadcast instead of normal broadcast.
+  /// [includeApplicationPackage] when true, includes the app package name in the intent.
   Future<void> sendIntent({
     required Map<String, dynamic> extras,
     String? action,
@@ -729,6 +1011,7 @@ class ZebraDataWedge {
     );
   }
 
+  /// Internal helper to send a query command that expects a result.
   Future<void> _sendQueryCommand({
     required String command,
     required String commandTag,

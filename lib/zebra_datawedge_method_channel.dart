@@ -3,11 +3,17 @@ import 'package:flutter/services.dart';
 
 import 'zebra_datawedge_platform_interface.dart';
 
+/// Method channel implementation of [ZebraDataWedgePlatform].
+///
+/// This class communicates with the native Android platform using
+/// [MethodChannel] for commands and [EventChannel] for scan events.
 class MethodChannelZebraDataWedgePlatform extends ZebraDataWedgePlatform {
+  /// The method channel for invoking platform methods.
   @visibleForTesting
   final MethodChannel methodChannel =
       const MethodChannel('zebra_datawedge/methods');
 
+  /// The event channel for receiving scan events from the platform.
   @visibleForTesting
   final EventChannel eventChannel =
       const EventChannel('zebra_datawedge/scans');
