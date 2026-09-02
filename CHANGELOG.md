@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Added support for secondary scan broadcast action (`com.basicintent.ACTION`) in Android receiver and intent filters.
+* Improved broadcast receiver intent compatibility across different Zebra DataWedge profile configurations.
+
 ## 1.0.0
 
 * Initial stable release with full Zebra DataWedge Android plugin support.
