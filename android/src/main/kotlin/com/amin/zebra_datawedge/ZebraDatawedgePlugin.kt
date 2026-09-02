@@ -1,4 +1,4 @@
-package com.amin.zebra_datawedge
+﻿package com.amin.zebra_datawedge
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -71,7 +71,8 @@ class ZebraDatawedgePlugin : FlutterPlugin, MethodCallHandler, EventChannel.Stre
   private val scanReceiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
       when (intent?.action) {
-        scanIntentAction -> handleScanIntent(intent)
+        scanIntentAction,
+        "com.basicintent.ACTION" -> handleScanIntent(intent)
         dataWedgeResultAction -> handleResultIntent(intent)
         dataWedgeNotificationAction -> handleNotificationIntent(intent)
       }
@@ -606,6 +607,7 @@ class ZebraDatawedgePlugin : FlutterPlugin, MethodCallHandler, EventChannel.Stre
 
     val filter = IntentFilter(scanIntentAction).apply {
       addCategory(Intent.CATEGORY_DEFAULT)
+      addAction("com.basicintent.ACTION")  // secondary scan action
       addAction(dataWedgeResultAction)
       addAction(dataWedgeNotificationAction)
     }
